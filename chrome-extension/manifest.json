@@ -1,0 +1,6 @@
+{
+  "name": "Immo History",
+  "description": "Scrap a real estate website to integrate it into immo-history backend",
+  "version": "1.0",
+  "manifest_version": 3
+}
