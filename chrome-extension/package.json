@@ -1,0 +1,11 @@
+{
+  "name": "immo-history-chrome-extension",
+  "version": "1.0.0",
+  "description": "Chrome extension for loading an immo history entry",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "fcamblor",
+  "license": "MIT"
+}
