@@ -1,10 +1,26 @@
 {
   "name": "immo-history-chrome-extension",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "Chrome extension for loading an immo history entry",
-  "main": "index.js",
+  "main": "dist/index.html",
+  "exports": {
+    ".": "./dist/index.html"
+  },
+  "types": "types/index.d.ts",
+  "files": [
+    "dist",
+    "types"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "tsc && vite build"
+  },
+  "dependencies": {
+    "lit": "2.0.2"
+  },
+  "devDependencies": {
+    "typescript": "4.5.4",
+    "vite": "2.8.0"
   },
   "author": "fcamblor",
   "license": "MIT"
