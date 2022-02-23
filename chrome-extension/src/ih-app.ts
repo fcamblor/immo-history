@@ -18,6 +18,7 @@ export class IHApp extends LitElement {
       <ih-counter>
         <p>This is child content</p>
       </ih-counter>
+      <ih-capture></ih-capture>
     `
   }
 }
