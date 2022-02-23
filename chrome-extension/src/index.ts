@@ -1,2 +1,3 @@
 import "./styles/ConstructibleStyleSheets"
-import "./my-element"
+import "./ih-app"
+import "./ih-counter"
