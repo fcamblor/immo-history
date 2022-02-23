@@ -1,0 +1,14 @@
+{
+  "name": "ih-domain",
+  "version": "0.0.0",
+  "description": "Domain types/classes for immo-history",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "4.5.4"
+  },
+  "author": "fcamblor",
+  "license": "MIT"
+}

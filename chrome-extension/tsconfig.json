@@ -17,5 +17,8 @@
     "useDefineForClassFields": false
   },
   "include": ["src/**/*.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "references": [
+    { "path": "./tsconfig.node.json" },
+    { "path": "../domain/tsconfig.json" }
+  ]
 }
