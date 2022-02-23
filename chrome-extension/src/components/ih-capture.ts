@@ -1,6 +1,7 @@
 import { html, css, LitElement } from 'lit'
 import { customElement } from 'lit/decorators.js'
 import {CSS_Global} from "../styles/ConstructibleStyleSheets";
+import {ISODateString, LetterRate, PictureHash, ScrappedData} from "../../../domain/domain-types";
 
 @customElement('ih-capture')
 export class IHCapture extends LitElement {
@@ -29,13 +30,20 @@ export class IHCapture extends LitElement {
         function delay(duration: number) {
           return new Promise((resolve) => setTimeout(resolve, duration));
         }
+        function toIsoDate(textualDate: string): ISODateString {
+          const lvl1Chunks = textualDate.split(" ");
+          const [day, month, year] = lvl1Chunks[0].split("/");
+          const [hours, minutes] = lvl1Chunks[2].split(":");
+          const dateWithoutTZOffset = `${year}-${month}-${day}T${hours}:${minutes}:00.000`;
+          return new Date(Date.parse(dateWithoutTZOffset)).toISOString();
+        }
 
         const $galleryButtons = Array.from<HTMLButtonElement>(document.querySelectorAll("[data-qa-id='adview_spotlight_container'] button"));
         const $mainGalleryButton = $galleryButtons.filter(el => el.className && el.className.indexOf("styles_fullHeight") !== -1)[0];
         $mainGalleryButton.click();
         await delay(300);
 
-        const getBase64ImageForUrl = (url: string) => {
+        const getBase64ImageForUrl = (url: string): Promise<string> => {
           return new Promise((resolve) => {
             const img = new Image();
 
@@ -63,12 +71,11 @@ export class IHCapture extends LitElement {
         console.log(`Found ${$pictures.length} pictures !`);
 
         let pictureHashes = await Promise.all(
-            $pictures.map(async $picture => {
+            $pictures.map(async ($picture): Promise<PictureHash> => {
               const dataURL = await getBase64ImageForUrl($picture.src);
               return { dataURL, url: $picture.src };
             })
         );
-        pictureHashes = [ pictureHashes[0] ];
 
         console.log(`Calculated picture hashes !`)
 
@@ -78,27 +85,28 @@ export class IHCapture extends LitElement {
         console.log(`Clicked on gallery modal close button`);
 
         const $viewMoreButton = Array.from<HTMLButtonElement>(document.querySelectorAll("[data-qa-id='adview_description_container'] button"))[0];
-        $viewMoreButton.click();
+        if($viewMoreButton) {
+          $viewMoreButton.click();
+          await delay(300);
+          console.log(`Clicked on view more button`);
+        }
 
-        await delay(300);
-
-        console.log(`Clicked on view more button`);
-
-        const data = {
-          html: Array.from<HTMLElement>(document.querySelectorAll("html"))[0].innerHTML,
-          price: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_price']"))[0].innerText,
+        const data: ScrappedData = {
+          html: Array.from<HTMLElement>(document.querySelectorAll("html"))[0].outerHTML,
+          price: Number(Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_price']"))[0].innerText.replace(/[\s€]/gi, "")),
           title: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_title']"))[1].innerText,
-          publishDate: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_date']"))[0].innerText,
+          publishDate: toIsoDate(Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_date']"))[0].innerText),
           htmlDescription: Array.from<HTMLParagraphElement>(document.querySelectorAll("[data-qa-id='adview_description_container'] p"))[0].innerHTML,
           contactName: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_contact_container'] a~div"))[0].innerText,
           energyRate: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='criteria_item_energy_rate'] div"))
-              .filter(el => el.className && el.className.indexOf("styles_active") !== -1)[0].innerText,
+              .filter(el => el.className && el.className.indexOf("styles_active") !== -1)[0].innerText as LetterRate,
           gesRate: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='criteria_item_ges'] div"))
-              .filter(el => el.className && el.className.indexOf("styles_active") !== -1)[0].innerText,
+              .filter(el => el.className && el.className.indexOf("styles_active") !== -1)[0].innerText as LetterRate,
+          livingSurface: Number(Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='criteria_item_square']"))[0].innerText.replace(/[^\d]+(\d+)[^\d]+/g, "$1")),
           pictureHashes
         };
 
-        await fetch('https://httpdump.io/bfajy', {
+        await fetch('http://localhost:8001/blah', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
