@@ -1,6 +1,6 @@
 import {Body, Controller, Get, Param, Post, Query} from '@nestjs/common';
 import { AppService } from './app.service';
-import type {ScrappedData} from '../../domain/dist/domain-types'
+import {ScrappedData} from '../../domain/dist/domain-types.js'
 
 @Controller()
 export class AppController {

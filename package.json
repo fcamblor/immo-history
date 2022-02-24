@@ -1,0 +1,15 @@
+{
+  "name": "ih-parent",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "cd domain && npm ci && ./node_modules/.bin/tsc && cd ../server && npm ci && npm run build"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
