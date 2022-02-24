@@ -16,7 +16,7 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "lit": "2.0.2"
+    "lit": "2.2.0"
   },
   "devDependencies": {
     "@types/chrome": "0.0.178",
