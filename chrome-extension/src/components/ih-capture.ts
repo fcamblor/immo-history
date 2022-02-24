@@ -91,18 +91,45 @@ export class IHCapture extends LitElement {
           console.log(`Clicked on view more button`);
         }
 
+        const selectPotentialNthElement = function<T, EL extends HTMLElement>(opts: { selector: string, nth?: number|undefined, transformer: (el: EL) => T, filter?: (el: EL) => boolean }): T|undefined {
+          let els = Array.from<EL>(document.querySelectorAll(opts.selector));
+          const filter = opts.filter;
+          if(filter) {
+            els = els.filter(el => filter(el));
+          }
+          const el: EL|undefined = els[opts.nth || 0];
+          if(el !== undefined) {
+            return opts.transformer(el);
+          }
+          return undefined;
+        }
+        const selectNthElement = function<T, EL extends HTMLElement>(opts: { selector: string, nth?: number|undefined, transformer: (el: EL) => T, filter?: (el: EL) => boolean }): T {
+          const result = selectPotentialNthElement(opts);
+          if(result === undefined) {
+            throw new Error(`Unexpected undefined value for selectNthElement(${JSON.stringify(opts)}) call`)
+          }
+          return result;
+        }
+
         const data: ScrappedData = {
-          html: Array.from<HTMLElement>(document.querySelectorAll("html"))[0].outerHTML,
-          price: Number(Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_price']"))[0].innerText.replace(/[\s€]/gi, "")),
-          title: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_title']"))[1].innerText,
-          publishDate: toIsoDate(Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_date']"))[0].innerText),
-          htmlDescription: Array.from<HTMLParagraphElement>(document.querySelectorAll("[data-qa-id='adview_description_container'] p"))[0].innerHTML,
-          contactName: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='adview_contact_container'] a~div"))[0].innerText,
-          energyRate: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='criteria_item_energy_rate'] div"))
-              .filter(el => el.className && el.className.indexOf("styles_active") !== -1)[0].innerText as LetterRate,
-          gesRate: Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='criteria_item_ges'] div"))
-              .filter(el => el.className && el.className.indexOf("styles_active") !== -1)[0].innerText as LetterRate,
-          livingSurface: Number(Array.from<HTMLDivElement>(document.querySelectorAll("[data-qa-id='criteria_item_square']"))[0].innerText.replace(/[^\d]+(\d+)[^\d]+/g, "$1")),
+          html: selectNthElement({ selector: "html", transformer: (el) => el.outerHTML }),
+          price: selectNthElement({ selector: "[data-qa-id='adview_price']", transformer: (el) => Number(el.innerText.replace(/[\s€]/gi, "")) }),
+          title: selectNthElement({ selector: "[data-qa-id='adview_title']", nth: 1, transformer: (el) => el.innerText }),
+          publishDate: selectNthElement({ selector: "[data-qa-id='adview_date']", transformer: (el) => toIsoDate(el.innerHTML) }),
+          htmlDescription: selectNthElement({ selector: "[data-qa-id='adview_description_container'] p", transformer: (el) => el.innerHTML }),
+          contactName: selectPotentialNthElement({ selector: "[data-qa-id='adview_contact_container'] a~div", transformer: (el) => el.innerText }),
+          energyRate: selectPotentialNthElement({
+            selector: "[data-qa-id='criteria_item_energy_rate'] div",
+            filter: (el) => !!el.className && el.className.indexOf("styles_active") !== -1,
+            transformer: el => el.innerText as LetterRate
+          }),
+          gesRate: selectPotentialNthElement({
+            selector: "[data-qa-id='criteria_item_ges'] div",
+            filter: (el) => !!el.className && el.className.indexOf("styles_active") !== -1,
+            transformer: el => el.innerText as LetterRate
+          }),
+          livingSurface: selectNthElement({ selector: "[data-qa-id='criteria_item_square']", transformer: el => Number(el.innerText.replace(/[^\d]+(\d+)[^\d]+/g, "$1")) }),
+          groundSurface: selectPotentialNthElement({ selector: "[data-qa-id='criteria_item_land_plot_surface']", transformer: el => Number(el.innerText.replace(/[^\d]+(\d+)[^\d]+/g, "$1")) }),
           pictureHashes
         };
 
