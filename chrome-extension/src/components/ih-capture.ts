@@ -111,8 +111,7 @@ export class IHCapture extends LitElement {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(data),
-          mode: 'no-cors'
+          body: JSON.stringify(data)
         })
 
         console.log(`Sent data !`)
