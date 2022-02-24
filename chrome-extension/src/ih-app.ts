@@ -1,5 +1,6 @@
 import { html, css, LitElement } from 'lit'
-import { customElement } from 'lit/decorators.js'
+import { customElement, state } from 'lit/decorators.js'
+import { ServerConfig } from '../../domain/dist/domain-types';
 import {CSS_Global} from "./styles/ConstructibleStyleSheets";
 
 @customElement('ih-app')
@@ -13,14 +14,30 @@ export class IHApp extends LitElement {
       `
   ]
 
+  @state()
+  private serverConfig: ServerConfig|undefined = undefined;
+
+  constructor() {
+      super();
+
+      chrome.storage.sync.get(null).then((entries: any) => {
+          if(entries.serverConfig) {
+              this.serverConfig = entries.serverConfig;
+          }
+      })
+  }
+
   render() {
     return html`
-      <ih-counter>
-        <p>This is child content</p>
-      </ih-counter>
-      <ih-capture></ih-capture>
+      <ih-config .serverConfig="${this.serverConfig}" @configUpdated="${(event: CustomEvent<ServerConfig>) => this.onConfigUpdated(event.detail)}"></ih-config>
+      <ih-capture .serverConfig="${this.serverConfig}"></ih-capture>
     `
   }
+
+    async onConfigUpdated(config: ServerConfig) {
+        this.serverConfig = config;
+        await chrome.storage.sync.set({ serverConfig: this.serverConfig });
+    }
 }
 
 declare global {

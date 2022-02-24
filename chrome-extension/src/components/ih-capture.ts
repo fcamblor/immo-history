@@ -1,7 +1,7 @@
 import { html, css, LitElement } from 'lit'
-import { customElement } from 'lit/decorators.js'
+import { customElement, property } from 'lit/decorators.js'
 import {CSS_Global} from "../styles/ConstructibleStyleSheets";
-import {ISODateString, LetterRate, PictureHash, ScrappedData} from "../../../domain/domain-types";
+import {ISODateString, LetterRate, PictureHash, ScrappedData, ServerConfig} from "../../../domain/dist/domain-types";
 
 @customElement('ih-capture')
 export class IHCapture extends LitElement {
@@ -13,9 +13,12 @@ export class IHCapture extends LitElement {
       `
   ]
 
+  @property()
+  serverConfig: ServerConfig|undefined = undefined;
+
   render() {
     return html`
-      <button @click=${this.capture} part="button">
+      <button @click=${this.capture} part="button" ?disabled="${this.serverConfig===undefined}">
         Capture page
       </button>
     `
@@ -23,10 +26,13 @@ export class IHCapture extends LitElement {
 
   private async capture() {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    console.log(`Server config during capture() : `, JSON.stringify(this.serverConfig))
 
-    chrome.scripting.executeScript({
+    chrome.scripting.executeScript<[ServerConfig]>({
       target: { tabId: tab.id as number },
-      func: async () => {
+      args: [ this.serverConfig! ],
+      func: async function(serverConfig: ServerConfig) {
+        console.log(`arguments: `, Array.from(arguments));
         function delay(duration: number) {
           return new Promise((resolve) => setTimeout(resolve, duration));
         }
@@ -133,10 +139,11 @@ export class IHCapture extends LitElement {
           pictureHashes
         };
 
-        await fetch('http://localhost:8001/blah', {
+        await fetch(`${serverConfig!.serverBaseUrl}/createScrapEntry`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': serverConfig!.authToken
           },
           body: JSON.stringify(data)
         })

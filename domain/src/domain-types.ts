@@ -21,3 +21,8 @@ export type ScrappedData = {
   gesRate?: LetterRate,
   pictureHashes: PictureHash[]
 };
+
+export type ServerConfig = {
+  serverBaseUrl: string;
+  authToken: string;
+}
