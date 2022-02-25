@@ -8,7 +8,7 @@ export class AppController {
 
   @Post("/createScrapEntry")
   createScrapEntry(@Body() obj: ScrappedData): string {
-    this.appService.getHello();
+    this.appService.createScrapEntry(obj);
 
     return `Hello world !`;
   }
